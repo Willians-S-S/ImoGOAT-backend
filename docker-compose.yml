@@ -1,0 +1,31 @@
+version: '3.9'
+
+services:
+  database:
+    image: postgres
+    container_name: database_imogoat_api
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=imogoat
+      - POSTGRES_PASSWORD=imo,123,goat
+      - POSTGRES_DB=imogoat_api
+    volumes:
+      - pgdata:/data/postgres
+
+  app:
+    build: .
+    container_name: imogoat_api_app
+    ports:
+      - 5000:5000
+    volumes:
+      - .:/usr/app
+    links:
+      - database
+    depends_on:
+      - database
+
+volumes:
+  pgdata:
+    driver: local

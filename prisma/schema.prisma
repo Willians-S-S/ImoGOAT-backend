@@ -1,0 +1,91 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int        @id @default(autoincrement())
+  username     String     @unique
+  email        String     @unique
+  password     String
+  number       String
+  role         Role       @default(user)
+  feedback     Feedback[]
+  immobiles    Immobile[]
+  favorites     Favorite[]
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+model Immobile {
+  id                Int        @id @default(autoincrement())
+  name              String
+  number            Int
+  type              TypeProperty
+  location          String
+  bairro            String
+  city              String
+  reference         String
+  value             Float
+  numberOfBedrooms  Int
+  numberOfBathrooms Int
+  garagem           Boolean
+  description       String
+  proprietaryId     Int
+  images            Image[]
+  feedbacks         Feedback[]
+  favorites          Favorite[]
+  proprietary       User       @relation(fields: [proprietaryId], references: [id])
+}
+
+model Feedback {
+  id          Int       @id @default(autoincrement())
+  rating      Int
+  comment     String
+  date        DateTime  @default(now())
+  userId      Int
+  immobileId  Int
+  user        User      @relation(fields: [userId], references: [id])
+  immobile    Immobile  @relation(fields: [immobileId], references: [id], onDelete: Cascade)
+}
+
+model Image {
+  id          Int       @id @default(autoincrement())
+  url         String
+  immobileId Int
+  immobile   Immobile @relation(fields: [immobileId], references: [id], onDelete: Cascade)
+}
+
+model Favorite {
+  id          Int       @id @default(autoincrement())
+  userId      Int
+  immobileId  Int
+  user        User      @relation(fields: [userId], references: [id])
+  immobile    Immobile  @relation(fields: [immobileId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, immobileId])
+}
+
+enum TypeProperty {
+  casa
+  apartamento
+  quitinete
+  pontoComercial
+}
+
+enum Role {
+  user
+  admin
+  owner
+}
